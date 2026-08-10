@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}
+Přihlášení
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-md-6">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body">
+
+                <h2>Přihlášení</h2>
+
+                <form method="POST">
+
+                    <div class="mb-3">
+
+                        <label>Uživatel</label>
+
+                        <input
+                            class="form-control"
+                            name="username"
+                        >
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label>Heslo</label>
+
+                        <input
+                            type="password"
+                            class="form-control"
+                            name="password"
+                        >
+
+                    </div>
+
+                    <button class="btn btn-primary">
+
+                        Přihlásit
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

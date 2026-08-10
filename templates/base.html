@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="widht=device-widht, initial-scale=1">
+
+    <title>{% block title %}IT Helpdesk{% endblock %}</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootsrap@5.3.3/dist/css/boostrap.min.css"
+        rel="stylesheet"
+    >    
+</head>
+
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                IT Helpdesk
+            </a>
+
+            <br>
+            
+            <a class="btn btn-success" href="/new">
+                + Nový ticket
+            </a>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+</body>
+</html>

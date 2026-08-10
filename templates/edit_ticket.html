@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Upravit ticket
+{% endblock %}
+
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-md-8">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body">
+
+                <h2 class="mb-4">
+                    Upravit ticket
+                </h2>
+
+
+                <form method="POST">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Název
+                        </label>
+
+                        <input
+                            type="text"
+                            name="title"
+                            class="form-control"
+                            value="{{ ticket.title }}"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Popis
+                        </label>
+
+                        <textarea
+                            name="description"
+                            class="form-control"
+                            rows="5"
+                            required
+                        >{{ ticket.description }}</textarea>
+
+                    </div>
+
+                    <div class="mb-3">
+                    
+                        <label class="form-label">Priorita</label>
+
+                        <select name="priority" class="form-select">
+
+                            <option value="Nízká"
+                                {% if ticket.priority == "Nízká" %}selected{% endif %}>
+                                Nízká
+                            </option>
+
+                            <option value="Střední"
+                                {% if ticket.priority == "Střední" %}selected{% endif %}>
+                                Střední
+                            </option>
+
+                            <option value="Vysoká"
+                                {% if ticket.priority == "Vysoká" %}selected{% endif %}>
+                                Vysoká
+                            </option>
+
+                            <option value="Kritická"
+                                {% if ticket.priority == "Kritická" %}selected{% endif %}>
+                                Kritická
+                            </option>
+
+                        </select>
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Stav
+                        </label>
+
+                        <select
+                            name="status"
+                            class="form-select"
+                        >
+
+                            <option
+                                value="Nový"
+                                {% if ticket.status == "Nový" %}selected{% endif %}
+                            >
+                                Nový
+                            </option>
+
+                            <option
+                                value="Řeší se"
+                                {% if ticket.status == "Řeší se" %}selected{% endif %}
+                            >
+                                Řeší se
+                            </option>
+
+                            <option
+                                value="Vyřešeno"
+                                {% if ticket.status == "Vyřešeno" %}selected{% endif %}
+                            >
+                                Vyřešeno
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Uložit změny
+                    </button>
+
+
+                    <a
+                        href="/ticket/{{ ticket.id }}"
+                        class="btn btn-secondary"
+                    >
+                        Zrušit
+                    </a>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

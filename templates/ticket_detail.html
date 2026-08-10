@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+{{ ticket.title }}
+{% endblock %}
+
+
+{% block content %}
+
+<div class="card shadow-sm">
+
+    <div class="card-body">
+
+        <h2>
+            {{ ticket.title }}
+        </h2>
+
+
+        <p class="text-muted">
+            Ticket #{{ ticket.id }}
+        </p>
+
+
+        <hr>
+
+
+        <h5>Popis</h5>
+
+        <p>
+            {{ ticket.description }}
+        </p>
+
+        <hr>
+
+
+        <h5>Stav</h5>
+
+        {% if ticket.status == "Nový" %}
+
+            <span class="badge bg-primary">
+                Nový
+            </span>
+
+        {% elif ticket.status == "Řeší se" %}
+
+            <span class="badge bg-warning text-dark">
+                Řeší se
+            </span>
+
+        {% elif ticket.status == "Vyřešeno" %}
+
+            <span class="badge bg-success">
+                Vyřešeno
+            </span>
+
+        {% endif %}
+
+
+        <hr>
+
+
+        <h5>Priorita</h5>
+
+        {% if ticket.priority == "Nízká" %}
+            <span class="badge bg-secondary">Nízká</span>
+
+        {% elif ticket.priority == "Střední" %}
+            <span class="badge bg-info text-dark">Střední</span>
+
+        {% elif ticket.priority == "Vysoká" %}
+            <span class="badge bg-warning text-dark">Vysoká</span>
+
+        {% elif ticket.priority == "Kritická" %}
+            <span class="badge bg-danger">Kritická</span>
+        {% endif %}
+
+        <hr>
+
+
+        <form
+            method="POST"
+            action="/ticket/{{ ticket.id }}/status"
+            class="mb-3"
+        >
+
+            <label class="form-label">
+                Změnit stav
+            </label>
+
+            <select
+                name="status"
+                class="form-select mb-2"
+            >
+
+                <option value="Nový">
+                    Nový
+                </option>
+
+                <option value="Řeší se">
+                    Řeší se
+                </option>
+
+                <option value="Vyřešeno">
+                    Vyřešeno
+                </option>
+
+            </select>
+
+
+            <button class="btn btn-primary">
+                Uložit stav
+            </button>
+
+        </form>
+
+
+        <a
+            href="/ticket/{{ ticket.id }}/edit"
+            class="btn btn-warning"
+        >
+            Upravit
+        </a>
+
+
+        <form
+            method="POST"
+            action="/ticket/{{ ticket.id }}/delete"
+            class="d-inline"
+        >
+
+            <button
+                type="submit"
+                class="btn btn-danger"
+            >
+                Smazat
+            </button>
+
+        </form>
+
+
+        <a
+            href="/"
+            class="btn btn-secondary"
+        >
+            Zpět
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

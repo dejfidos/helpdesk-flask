@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Nový ticket
+{% endblock %}
+
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-md-8">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body">
+
+                <h2 class="mb-4">
+                    Vytvořit nový ticket
+                </h2>
+
+
+                <form method="POST">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Název problému
+                        </label>
+
+                        <input
+                            type="text"
+                            name="title"
+                            class="form-control"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Popis problému
+                        </label>
+
+                        <textarea
+                            name="description"
+                            class="form-control"
+                            rows="5"
+                            required
+                        ></textarea>
+
+                    </div>
+                    
+                    <br>
+
+                    <div class="mb-3">
+                        <label class="form-label">Priorita</label>
+
+                        <select name="priority" class="form-select">
+                            <option value="Nízká">Nízká</option>
+                            <option value="Střední" selected>Střední</option>
+                            <option value="Vysoká">Vysoká</option>
+                            <option value="Kritická">Kritická</option>
+                        </select>
+                    </div>
+
+                    <br>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Vytvořit ticket
+                    </button>
+
+
+                    <a
+                        href="/"
+                        class="btn btn-secondary"
+                    >
+                        Zrušit
+                    </a>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

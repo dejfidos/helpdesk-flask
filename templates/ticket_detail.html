@@ -16,6 +16,22 @@
             {{ ticket.title }}
         </h2>
 
+        <h5>Vytvořil</h5>
+
+        <p>
+            {% if ticket.author %}
+                {{ ticket.author.username }}
+            {% else %}
+                Neznámý Uživatel
+            {% endif %}
+        </p>
+
+        <h5>Vytvořeno</h5>
+
+        <p>
+            {{ ticket.created_at_local.strftime("%d.%m.%Y %H:%M") }}
+        </p>
+
 
         <p class="text-muted">
             Ticket #{{ ticket.id }}

@@ -14,34 +14,46 @@ Přihlášení
 
             <div class="card-body">
 
-                <h2>Přihlášení</h2>
+                <h2 class="mb-4">
+                    Přihlášení
+                </h2>
 
                 <form method="POST">
 
                     <div class="mb-3">
 
-                        <label>Uživatel</label>
+                        <label class="form-label">
+                            Uživatel
+                        </label>
 
                         <input
+                            type="text"
                             class="form-control"
                             name="username"
+                            required
                         >
 
                     </div>
 
                     <div class="mb-3">
 
-                        <label>Heslo</label>
+                        <label class="form-label">
+                            Heslo
+                        </label>
 
                         <input
                             type="password"
                             class="form-control"
                             name="password"
+                            required
                         >
 
                     </div>
 
-                    <button class="btn btn-primary">
+                    <button 
+                        type="submit"
+                        class="btn btn-primary"
+                    >
 
                         Přihlásit
 

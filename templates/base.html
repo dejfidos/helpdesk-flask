@@ -22,9 +22,35 @@
 
             <br>
             
-            <a class="btn btn-success" href="/new">
-                + Nový ticket
-            </a>
+            <div class="d-flex align-items-center gap-2">
+
+                {% if session.get("user_id") %}
+
+                    <span class="text-white">
+                        Přihlášen: {{ session.get("username") }}
+                    </span>
+
+                    <a class="btn btn-success" href="/new">
+                        + Nový ticket
+                    </a>
+
+                    <a class="btn btn-outline-light" href="/logout">
+                        Odhlásit
+                    </a>
+
+                {% else %}
+
+                    <a class="btn btn-outline-light" href="/login">
+                        Přihlásit
+                    </a>
+
+                    <a class="btn btn-primary" href="/register">
+                        Registrovat
+                    </a>
+
+                {% endif %}
+
+            </div>
         </div>
     </nav>
 

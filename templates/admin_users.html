@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}
+Správa uživatelů
+{% endblock %}
+
+{% block content %}
+
+<h1 class="mb-4">
+    Správa uživatelů
+</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <table class="table table-hover align-middle">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Uživatel</th>
+                    <th>Role</th>
+                    <th>Změnit roli</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for user in users %}
+
+                <tr>
+
+                    <td>
+                        #{{ user.id }}
+                    </td>
+
+                    <td>
+                        {{ user.username }}
+                    </td>
+
+                    <td>
+                        {% if user.role == "admin" %}
+                            <span class="badge bg-danger">
+                                Admin
+                            </span>
+
+                        {% elif user.role == "technician" %}
+                            <span class="badge bg-warning text-dark">
+                                Technik
+                            </span>
+
+                        {% else %}
+                            <span class="badge bg-secondary">
+                                Uživatel
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+
+                        <form
+                            method="POST"
+                            action="{{ url_for('main.change_user_role', user_id=user.id) }}"
+                            class="d-flex gap-2"
+                        >
+
+                            <select
+                                name="role"
+                                class="form-select"
+                                {% if user.id == session.get("user_id") %}disabled{% endif %}
+                            >
+
+                                <option
+                                    value="user"
+                                    {% if user.role == "user" %}selected{% endif %}
+                                >
+                                    Uživatel
+                                </option>
+
+                                <option
+                                    value="technician"
+                                    {% if user.role == "technician" %}selected{% endif %}
+                                >
+                                    Technik
+                                </option>
+
+                                <option
+                                    value="admin"
+                                    {% if user.role == "admin" %}selected{% endif %}
+                                >
+                                    Admin
+                                </option>
+
+                            </select>
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                {% if user.id == session.get("user_id") %}disabled{% endif %}
+                            >
+                                Uložit
+                            </button>
+
+                        </form>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+</div>
+
+{% endblock %}

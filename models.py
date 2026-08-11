@@ -12,6 +12,19 @@ class Ticket(db.Model):
     status = db.Column(db.String(50), nullable=False, default="Nový")
     priority = db.Column(db.String(50), nullable=False, default="Střední")
 
+
+    assigned_user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=True
+    )
+
+    assigned_user = db.relationship(
+            "User",
+            foreign_keys=[assigned_user_id],
+            backref="assigned_tickets"
+        )
+
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("user.id"),
@@ -20,7 +33,8 @@ class Ticket(db.Model):
 
     author = db.relationship(
         "User",
-        backref="tickets"
+        foreign_keys=[user_id],
+        backref="created_tickets"
     )
 
     created_at = db.Column(
@@ -41,6 +55,8 @@ class Ticket(db.Model):
         return utc_time.astimezone(
             ZoneInfo("Europe/Prague")
         )
+
+    
 
 
 class User(db.Model):

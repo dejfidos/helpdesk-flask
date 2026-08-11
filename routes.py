@@ -84,9 +84,12 @@ def new_ticket():
 def ticket_detail(ticket_id):
     ticket = db.get_or_404(Ticket, ticket_id)
 
+    users = User.query.order_by(User.username).all()
+
     return render_template(
         "ticket_detail.html",
-        ticket=ticket
+        ticket=ticket,
+        users=users
     )
 
 
@@ -109,9 +112,11 @@ def change_status(ticket_id):
 
 @main.route("/ticket/<int:ticket_id>/edit", methods=["GET","POST"])
 @login_required
-@technician_required
 def edit_ticket(ticket_id):
     ticket = db.get_or_404(Ticket, ticket_id)
+
+    if session.get("role") == "user" and ticket.user_id != session.get("user_id"):
+        return "Nemáš oprávnění upravovat tento ticket.", 403
 
     if request.method == "POST":
         ticket.title = request.form["title"]
@@ -138,6 +143,61 @@ def delete_ticket(ticket_id):
     db.session.commit()
 
     return redirect(url_for("main.index"))
+
+@main.route("/admin/users")
+@login_required
+@admin_required
+def admin_users():
+    users = User.query.order_by(User.username).all()
+
+    return render_template(
+        "admin_users.html",
+        users=users
+    )
+
+@main.route("/admin/users/<int:user_id>/role", methods=["POST"])
+@login_required
+@admin_required
+def change_user_role(user_id):
+    user = db.get_or_404(User, user_id)
+
+    new_role = request.form["role"]
+
+    allowed_roles = ["user", "technician", "admin"]
+
+    if new_role not in allowed_roles:
+        return "Neplatná role", 400
+
+    if user.id == session["user_id"] and new_role != "admin":
+        return "Nemůžeš sám sobě odebrat roli admina.", 403
+
+    user.role = new_role
+    db.session.commit()
+
+    return redirect(url_for("main.admin_users"))
+
+
+@main.route("/ticket/<int:ticket_id>/assign", methods=["POST"])
+@login_required
+def assign_ticket(ticket_id):
+    ticket = db.get_or_404(Ticket, ticket_id)
+
+    if session.get("role") not in ["technician", "admin"]:
+        return "Nemáš oprávnění přiřazovat tickety.", 403
+
+    assigned_user_id = request.form["assigned_user_id"]
+
+    if assigned_user_id == "":
+        ticket.assigned_user_id = None
+    else:
+        user = db.get_or_404(User, int(assigned_user_id))
+        ticket.assigned_user_id = user.id
+
+    db.session.commit()
+
+    return redirect(
+        url_for("main.ticket_detail", ticket_id=ticket.id)
+    )
 
 
 @main.route("/register", methods=["GET", "POST"])

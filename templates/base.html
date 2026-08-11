@@ -31,6 +31,14 @@
                         {{ session.get("username") }}
                         ({{ session.get("role") }})
                     </span>
+                    {% if session.get("role") == "admin" %}
+                        <a
+                            class="btn btn-outline-warning"
+                            href="{{ url_for('main.admin_users') }}"
+                        >
+                            Administrace
+                        </a>
+                    {% endif %}
 
                     <a class="btn btn-success" href="/new">
                         + Nový ticket

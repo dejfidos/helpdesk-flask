@@ -16,6 +16,26 @@ def login_required(view):
 
     return wrapped_view
 
+def admin_required(view):
+    @wraps(view)
+    def wrapped_view(*args, **kwargs):
+        if session.get("role") != "admin":
+            return "Nemáš oprávnění k této akci", 403
+
+        return view(*args, **kwargs)
+
+    return wrapped_view
+
+def technician_required(view):
+    @wraps(view)
+    def wrapped_view(*args, **kwargs):
+        if session.get("role") not in ["technician", "admin"]:
+            return "Nemáš oprávnění k této akci.", 403
+
+        return view(*args, **kwargs)
+
+    return wrapped_view
+
 
 @main.route("/")
 @login_required
@@ -72,6 +92,7 @@ def ticket_detail(ticket_id):
 
 @main.route("/ticket/<int:ticket_id>/status", methods=["POST"])
 @login_required
+@technician_required
 def change_status(ticket_id):
     ticket = db.get_or_404(Ticket, ticket_id)
 
@@ -88,6 +109,7 @@ def change_status(ticket_id):
 
 @main.route("/ticket/<int:ticket_id>/edit", methods=["GET","POST"])
 @login_required
+@technician_required
 def edit_ticket(ticket_id):
     ticket = db.get_or_404(Ticket, ticket_id)
 
@@ -108,6 +130,7 @@ def edit_ticket(ticket_id):
 
 @main.route("/ticket/<int:ticket_id>/delete", methods=["POST"])
 @login_required
+@admin_required
 def delete_ticket(ticket_id):
     ticket = db.get_or_404(Ticket, ticket_id)
 
@@ -157,6 +180,7 @@ def login():
 
             session["user_id"] = user.id
             session["username"] = user.username
+            session["role"] = user.role
 
             return redirect(url_for("main.index"))
 

@@ -27,7 +27,9 @@
                 {% if session.get("user_id") %}
 
                     <span class="text-white">
-                        Přihlášen: {{ session.get("username") }}
+                        Přihlášen: 
+                        {{ session.get("username") }}
+                        ({{ session.get("role") }})
                     </span>
 
                     <a class="btn btn-success" href="/new">

@@ -94,6 +94,8 @@
         <hr>
 
 
+        {% if session.get("role") in ["technician", "admin"] %}
+        
         <form
             method="POST"
             action="/ticket/{{ ticket.id }}/status"
@@ -129,8 +131,9 @@
             </button>
 
         </form>
+        {% endif %}
 
-
+        {% if session.get("role") in ["technician", "admin"] %}
         <a
             href="/ticket/{{ ticket.id }}/edit"
             class="btn btn-warning"
@@ -138,21 +141,24 @@
             Upravit
         </a>
 
+        {% endif %}
 
-        <form
-            method="POST"
-            action="/ticket/{{ ticket.id }}/delete"
-            class="d-inline"
-        >
-
-            <button
-                type="submit"
-                class="btn btn-danger"
+        {% if session.get("role") == "admin" %}
+            <form
+                method="POST"
+                action="/ticket/{{ ticket.id }}/delete"
+                class="d-inline"
             >
-                Smazat
-            </button>
 
-        </form>
+                <button
+                    type="submit"
+                    class="btn btn-danger"
+                >
+                    Smazat
+                </button>
+
+            </form>
+        {% endif %}
 
 
         <a

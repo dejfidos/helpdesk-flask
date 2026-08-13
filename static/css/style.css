@@ -1,0 +1,35 @@
+body{
+    background:#f5f7fb;
+}
+
+.navbar{
+    box-shadow:0 3px 10px rgba(0,0,0,0.08);
+}
+
+.card{
+    border:none;
+    border-radius:14px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+.table td{
+    vertical-align:middle;
+}
+
+.badge{
+    font-size:.85rem;
+}
+
+.btn{
+    border-radius:10px;
+}
+
+.form-control,
+.form-select{
+    border-radius:10px;
+}
+
+.card-header{
+    background:white;
+    font-weight:600;
+}

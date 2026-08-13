@@ -364,6 +364,7 @@ def logout():
 
     return redirect(url_for("main.login"))
 
+
 @main.route("/ticket/<int:ticket_id>/attachment", methods=["POST"])
 @login_required
 def upload_attachment(ticket_id):
@@ -407,4 +408,46 @@ def upload_attachment(ticket_id):
 
     return redirect(
         url_for("main.ticket_detail", ticket_id=ticket.id)
+    )
+
+
+@main.route("/attachment/<int:attachment_id>")
+@login_required
+def download_attachment(attachment_id):
+    attachment = db.get_or_404(Attachment, attachment_id)
+
+    return send_from_directory(
+        UPLOAD_FOLDER,
+        attachment.stored_filename,
+        as_attachment=True,
+        download_name=attachment.filename
+    )
+
+
+@main.route("/attachment/<int:attachment_id>/delete", methods=["POST"])
+@login_required
+def delete_attachment(attachment_id):
+    attachment = db.get_or_404(Attachment, attachment_id)
+
+    if (
+        attachment.user_id != session["user_id"]
+        and session.get("role") != "admin"
+    ):
+        return "Nemáš oprávnění smazat tuto přílohu.", 403
+
+    ticket_id = attachment.ticket_id
+
+    file_path = os.path.join(
+        UPLOAD_FOLDER,
+        attachment.stored_filename
+    )
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    db.session.delete(attachment)
+    db.session.commit()
+
+    return redirect(
+        url_for("main.ticket_detail", ticket_id=ticket_id)
     )

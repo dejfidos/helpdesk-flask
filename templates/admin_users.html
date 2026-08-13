@@ -1,28 +1,62 @@
 {% extends "base.html" %}
 
 {% block title %}
-Správa uživatelů
+Administrace uživatelů | IT HelpDesk
 {% endblock %}
 
 {% block content %}
 
-<h1 class="mb-4">
-    Správa uživatelů
-</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-<div class="card shadow-sm">
-    <div class="card-body">
+    <div>
+        <h1 class="mb-1">
+            <i class="bi bi-people"></i>
+            Správa uživatelů
+        </h1>
 
-        <table class="table table-hover align-middle">
+        <p class="text-muted mb-0">
+            Přehled registrovaných uživatelů a jejich rolí
+        </p>
+    </div>
 
-            <thead>
+</div>
+
+
+<div class="card">
+
+    <div class="card-header py-3">
+
+        <div class="d-flex justify-content-between align-items-center">
+
+            <h5 class="mb-0">
+                <i class="bi bi-person-lines-fill"></i>
+                Uživatelé
+            </h5>
+
+            <span class="text-muted">
+                {{ users|length }} účtů
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="table-responsive">
+
+        <table class="table table-hover align-middle mb-0">
+
+            <thead class="table-light">
+
                 <tr>
                     <th>ID</th>
                     <th>Uživatel</th>
                     <th>Role</th>
-                    <th>Změnit roli</th>
+                    <th style="width: 320px;">Změnit roli</th>
                 </tr>
+
             </thead>
+
 
             <tbody>
 
@@ -30,78 +64,135 @@ Správa uživatelů
 
                 <tr>
 
-                    <td>
+                    <td class="text-muted">
                         #{{ user.id }}
                     </td>
 
-                    <td>
-                        {{ user.username }}
-                    </td>
 
                     <td>
+
+                        <div class="d-flex align-items-center gap-2">
+
+                            <i class="bi bi-person-circle fs-4"></i>
+
+                            <div>
+                                <div class="fw-semibold">
+                                    {{ user.username }}
+                                </div>
+
+                                {% if user.id == session.get("user_id") %}
+                                    <small class="text-muted">
+                                        Tvůj účet
+                                    </small>
+                                {% endif %}
+                            </div>
+
+                        </div>
+
+                    </td>
+
+
+                    <td>
+
                         {% if user.role == "admin" %}
+
                             <span class="badge bg-danger">
+                                <i class="bi bi-shield-lock"></i>
                                 Admin
                             </span>
 
                         {% elif user.role == "technician" %}
+
                             <span class="badge bg-warning text-dark">
+                                <i class="bi bi-tools"></i>
                                 Technik
                             </span>
 
                         {% else %}
+
                             <span class="badge bg-secondary">
+                                <i class="bi bi-person"></i>
                                 Uživatel
                             </span>
+
                         {% endif %}
+
                     </td>
+
 
                     <td>
 
-                        <form
-                            method="POST"
-                            action="{{ url_for('main.change_user_role', user_id=user.id) }}"
-                            class="d-flex gap-2"
-                        >
+                        {% if user.id == session.get("user_id") %}
 
-                            <select
-                                name="role"
-                                class="form-select"
-                                {% if user.id == session.get("user_id") %}disabled{% endif %}
+                            <div class="text-muted">
+                                <i class="bi bi-lock"></i>
+                                Vlastní roli nelze změnit
+                            </div>
+
+                        {% else %}
+
+                            <form
+                                method="POST"
+                                action="{{ url_for('main.change_user_role', user_id=user.id) }}"
+                                class="d-flex gap-2"
                             >
 
-                                <option
-                                    value="user"
-                                    {% if user.role == "user" %}selected{% endif %}
+                                <select
+                                    name="role"
+                                    class="form-select"
                                 >
-                                    Uživatel
-                                </option>
 
-                                <option
-                                    value="technician"
-                                    {% if user.role == "technician" %}selected{% endif %}
+                                    <option
+                                        value="user"
+                                        {% if user.role == "user" %}selected{% endif %}
+                                    >
+                                        Uživatel
+                                    </option>
+
+                                    <option
+                                        value="technician"
+                                        {% if user.role == "technician" %}selected{% endif %}
+                                    >
+                                        Technik
+                                    </option>
+
+                                    <option
+                                        value="admin"
+                                        {% if user.role == "admin" %}selected{% endif %}
+                                    >
+                                        Admin
+                                    </option>
+
+                                </select>
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary"
                                 >
-                                    Technik
-                                </option>
+                                    <i class="bi bi-save"></i>
+                                    Uložit
+                                </button>
 
-                                <option
-                                    value="admin"
-                                    {% if user.role == "admin" %}selected{% endif %}
-                                >
-                                    Admin
-                                </option>
+                            </form>
 
-                            </select>
+                        {% endif %}
 
-                            <button
-                                type="submit"
-                                class="btn btn-primary"
-                                {% if user.id == session.get("user_id") %}disabled{% endif %}
-                            >
-                                Uložit
-                            </button>
+                    </td>
 
-                        </form>
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td
+                        colspan="4"
+                        class="text-center text-muted py-5"
+                    >
+
+                        <i class="bi bi-people fs-1 d-block mb-2"></i>
+
+                        Nejsou registrovaní žádní uživatelé.
 
                     </td>
 
@@ -114,6 +205,7 @@ Správa uživatelů
         </table>
 
     </div>
+
 </div>
 
 {% endblock %}

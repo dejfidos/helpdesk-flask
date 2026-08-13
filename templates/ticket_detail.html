@@ -8,363 +8,483 @@
 
 {% block content %}
 
-<div class="card shadow-sm">
+<div class="row g-4">
 
-    <div class="card-body">
+    <!-- LEVÝ SLOUPEC -->
+    <div class="col-lg-8">
 
-        <h2>
-            {{ ticket.title }}
-        </h2>
+        <div class="card mb-4">
 
-        <h5>Vytvořil</h5>
+            <div class="card-body">
 
-        <p>
-            {% if ticket.author %}
-                {{ ticket.author.username }}
-            {% else %}
-                Neznámý Uživatel
-            {% endif %}
-        </p>
+                <div class="d-flex justify-content-between align-items-start mb-3">
 
-        <h5>Vytvořeno</h5>
+                    <div>
+                        <h2 class="mb-1">
+                            {{ ticket.title }}
+                        </h2>
 
-        <p>
-            {{ ticket.created_at_local.strftime("%d.%m.%Y %H:%M") }}
-        </p>
+                        <div class="text-muted">
+                            Ticket #{{ ticket.id }}
+                        </div>
+                    </div>
 
+                </div>
 
-        <p class="text-muted">
-            Ticket #{{ ticket.id }}
-        </p>
+                <hr>
 
-        <h5>Přiřazeno</h5>
+                <h5>Popis</h5>
 
-        <p>
-            {% if ticket.assigned_user %}
-                {{ ticket.assigned_user.username }}
-            {% else %}
-                Nikomu
-            {% endif %}
-        </p>
-
-        {% if session.get("role") in ["technician", "admin"] %}
-
-            <form
-                method="POST"
-                action="{{ url_for('main.assign_ticket', ticket_id=ticket.id) }}"
-                class="mb-3"
-            >
-
-                <label class="form-label">
-                    Přiřadit uživateli
-                </label>
-
-                <select
-                    name="assigned_user_id"
-                    class="form-select mb-2"
-                >
-
-                    <option value="">
-                        -- Nikomu --
-                    </option>
-
-                    {% for user in users %}
-
-                        <option
-                            value="{{ user.id }}"
-                            {% if ticket.assigned_user_id == user.id %}selected{% endif %}
-                        >
-                            {{ user.username }} ({{ user.role }})
-                        </option>
-
-                    {% endfor %}
-
-                </select>
-
-                <button
-                    type="submit"
-                    class="btn btn-primary"
-                >
-                    Uložit přiřazení
-                </button>
-
-            </form>
-
-        {% endif %}
-
-
-        <hr>
-
-
-        <h5>Popis</h5>
-
-        <p>
-            {{ ticket.description }}
-        </p>
-
-        <hr>
-
-        <h3>Přílohy</h3>
-
-        <form
-            method="POST"
-            action="{{ url_for('main.upload_attachment', ticket_id=ticket.id) }}"
-            enctype="multipart/form-data"
-            class="mb-4"
-        >
-
-            <div class="mb-3">
-
-                <input
-                    type="file"
-                    name="file"
-                    class="form-control"
-                    required
-                >
+                <p class="mb-0">
+                    {{ ticket.description }}
+                </p>
 
             </div>
 
-            <button
-                type="submit"
-                class="btn btn-primary"
-            >
-                Nahrát přílohu
-            </button>
-
-        </form>
-
-        {% if ticket.attachments %}
-
-            <ul class="list-group">
-
-                {% for attachment in ticket.attachments %}
-
-                    <li class="list-group-item">
-
-                        📎 {{ attachment.filename }}
-
-                        <small class="text-muted">
-                            nahrál {{ attachment.uploader.username }}
-                        </small>
-
-                    </li>
-
-                {% endfor %}
-
-            </ul>
-
-        {% else %}
-
-            <p class="text-muted">
-                Ticket zatím nemá žádné přílohy.
-            </p>
-
-        {% endif %}
+        </div>
 
 
-        <hr>
-        <h3 class="mb-3">Komentáře</h3>
+        <!-- KOMENTÁŘE -->
+        <div class="card mb-4">
 
-        {% for comment in ticket.comments %}
+            <div class="card-header py-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-chat-left-text"></i>
+                    Komentáře
+                </h5>
+            </div>
 
-            <div class="card mb-3">
+            <div class="card-body">
 
-                <div class="card-body">
+                {% for comment in ticket.comments %}
 
-                    <div class="d-flex justify-content-between">
+                    <div class="border rounded p-3 mb-3">
 
-                        <strong>
-                            {{ comment.author.username }}
-                        </strong>
+                        <div class="d-flex justify-content-between mb-2">
 
-                        <small class="text-muted">
-                            {{ comment.created_at.strftime("%d.%m.%Y %H:%M") }}
-                        </small>
+                            <strong>
+                                <i class="bi bi-person-circle"></i>
+                                {{ comment.author.username }}
+                            </strong>
+
+                            <small class="text-muted">
+                                {{ comment.created_at.strftime("%d.%m.%Y %H:%M") }}
+                            </small>
+
+                        </div>
+
+                        <p class="mb-2">
+                            {{ comment.message }}
+                        </p>
+
+                        {% if comment.user_id == session.get("user_id")
+                              or session.get("role") == "admin" %}
+
+                            <form
+                                method="POST"
+                                action="{{ url_for('main.delete_comment', comment_id=comment.id) }}"
+                            >
+                                <button
+                                    type="submit"
+                                    class="btn btn-sm btn-outline-danger"
+                                >
+                                    <i class="bi bi-trash"></i>
+                                    Smazat
+                                </button>
+                            </form>
+
+                        {% endif %}
 
                     </div>
 
-                    <p class="mt-2 mb-0">
-                        {{ comment.message }}
+                {% else %}
+
+                    <p class="text-muted">
+                        Zatím zde nejsou žádné komentáře.
                     </p>
-                    {% if comment.user_id == session.get("user_id")
-                    or session.get("role") == "admin" %}
 
-                    <form
-                        method="POST"
-                        action="{{ url_for('main.delete_comment', comment_id=comment.id) }}"
+                {% endfor %}
+
+
+                <form
+                    method="POST"
+                    action="{{ url_for('main.add_comment', ticket_id=ticket.id) }}"
+                    class="mt-4"
+                >
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Přidat komentář
+                        </label>
+
+                        <textarea
+                            name="message"
+                            class="form-control"
+                            rows="4"
+                            required
+                        ></textarea>
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
                     >
-                        <button
-                            class="btn btn-sm btn-outline-danger"
-                            type="submit"
-                        >
-                            🗑 Smazat
-                        </button>
-                    </form>
+                        <i class="bi bi-send"></i>
+                        Přidat komentář
+                    </button>
 
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <!-- PŘÍLOHY -->
+        <div class="card">
+
+            <div class="card-header py-3">
+
+                <h5 class="mb-0">
+                    <i class="bi bi-paperclip"></i>
+                    Přílohy
+                </h5>
+
+            </div>
+
+            <div class="card-body">
+
+                {% if ticket.attachments %}
+
+                    <div class="list-group mb-4">
+
+                        {% for attachment in ticket.attachments %}
+
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+
+                                <div>
+
+                                    <a
+                                        href="{{ url_for('main.download_attachment', attachment_id=attachment.id) }}"
+                                        class="text-decoration-none"
+                                    >
+                                        <i class="bi bi-file-earmark"></i>
+                                        {{ attachment.filename }}
+                                    </a>
+
+                                    <small class="text-muted d-block">
+                                        Nahrál {{ attachment.uploader.username }}
+                                    </small>
+
+                                </div>
+
+                                {% if attachment.user_id == session.get("user_id")
+                                      or session.get("role") == "admin" %}
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for('main.delete_attachment', attachment_id=attachment.id) }}"
+                                    >
+                                        <button
+                                            type="submit"
+                                            class="btn btn-sm btn-outline-danger"
+                                        >
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+
+                                {% endif %}
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% else %}
+
+                    <p class="text-muted">
+                        Ticket zatím nemá žádné přílohy.
+                    </p>
+
+                {% endif %}
+
+
+                <form
+                    method="POST"
+                    action="{{ url_for('main.upload_attachment', ticket_id=ticket.id) }}"
+                    enctype="multipart/form-data"
+                >
+
+                    <div class="input-group">
+
+                        <input
+                            type="file"
+                            name="file"
+                            class="form-control"
+                            required
+                        >
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            <i class="bi bi-upload"></i>
+                            Nahrát
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- PRAVÝ SLOUPEC -->
+    <div class="col-lg-4">
+
+        <div class="card mb-4">
+
+            <div class="card-header py-3">
+                <h5 class="mb-0">
+                    Informace
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <div class="text-muted small">
+                        Stav
+                    </div>
+
+                    {% if ticket.status == "Nový" %}
+                        <span class="badge bg-primary">
+                            Nový
+                        </span>
+
+                    {% elif ticket.status == "Řeší se" %}
+                        <span class="badge bg-warning text-dark">
+                            Řeší se
+                        </span>
+
+                    {% elif ticket.status == "Vyřešeno" %}
+                        <span class="badge bg-success">
+                            Vyřešeno
+                        </span>
+                    {% endif %}
+                </div>
+
+
+                <div class="mb-3">
+                    <div class="text-muted small">
+                        Priorita
+                    </div>
+
+                    {% if ticket.priority == "Nízká" %}
+                        <span class="badge bg-secondary">
+                            Nízká
+                        </span>
+
+                    {% elif ticket.priority == "Střední" %}
+                        <span class="badge bg-info text-dark">
+                            Střední
+                        </span>
+
+                    {% elif ticket.priority == "Vysoká" %}
+                        <span class="badge bg-warning text-dark">
+                            Vysoká
+                        </span>
+
+                    {% elif ticket.priority == "Kritická" %}
+                        <span class="badge bg-danger">
+                            Kritická
+                        </span>
+                    {% endif %}
+                </div>
+
+
+                <div class="mb-3">
+
+                    <div class="text-muted small">
+                        Autor
+                    </div>
+
+                    {% if ticket.author %}
+                        <i class="bi bi-person"></i>
+                        {{ ticket.author.username }}
+                    {% else %}
+                        Neznámý
                     {% endif %}
 
                 </div>
+
+
+                <div class="mb-3">
+
+                    <div class="text-muted small">
+                        Přiřazeno
+                    </div>
+
+                    {% if ticket.assigned_user %}
+                        <i class="bi bi-person-check"></i>
+                        {{ ticket.assigned_user.username }}
+                    {% else %}
+                        Nepřiřazeno
+                    {% endif %}
+
+                </div>
+
+
+                <div>
+
+                    <div class="text-muted small">
+                        Vytvořeno
+                    </div>
+
+                    {{ ticket.created_at_local.strftime("%d.%m.%Y %H:%M") }}
+
+                </div>
+
             </div>
 
-        {% else %}
+        </div>
 
-            <p class="text-muted">
-                Zatím nejsou žádné komentáře.
-            </p>
+                <div class="card">
 
-        {% endfor %}
-        <hr>
-        <form
-            method="POST"
-            action="{{ url_for('main.add_comment', ticket_id=ticket.id) }}"
-        >
+            <div class="card-header py-3">
+                <h5 class="mb-0">
+                    Akce
+                </h5>
+            </div>
 
-            <div class="mb-3">
+            <div class="card-body">
 
-                <label class="form-label">
-                    Přidat komentář
-                </label>
+                {% if session.get("role") in ["technician", "admin"] %}
 
-                <textarea
-                    name="message"
-                    class="form-control"
-                    rows="4"
-                    required
-                ></textarea>
+                    <form
+                        method="POST"
+                        action="{{ url_for('main.change_status', ticket_id=ticket.id) }}"
+                        class="mb-3"
+                    >
+
+                        <label class="form-label">
+                            Změnit stav
+                        </label>
+
+                        <select
+                            name="status"
+                            class="form-select mb-2"
+                        >
+                            <option value="Nový">
+                                Nový
+                            </option>
+
+                            <option value="Řeší se">
+                                Řeší se
+                            </option>
+
+                            <option value="Vyřešeno">
+                                Vyřešeno
+                            </option>
+                        </select>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100"
+                        >
+                            Uložit stav
+                        </button>
+
+                    </form>
+
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('main.assign_ticket', ticket_id=ticket.id) }}"
+                        class="mb-3"
+                    >
+
+                        <label class="form-label">
+                            Přiřadit uživateli
+                        </label>
+
+                        <select
+                            name="assigned_user_id"
+                            class="form-select mb-2"
+                        >
+
+                            <option value="">
+                                -- Nikomu --
+                            </option>
+
+                            {% for user in users %}
+
+                                <option
+                                    value="{{ user.id }}"
+                                    {% if ticket.assigned_user_id == user.id %}selected{% endif %}
+                                >
+                                    {{ user.username }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                        <button
+                            type="submit"
+                            class="btn btn-outline-primary w-100"
+                        >
+                            Uložit přiřazení
+                        </button>
+
+                    </form>
+
+                {% endif %}
+
+
+                {% if session.get("role") in ["technician", "admin"]
+                      or ticket.user_id == session.get("user_id") %}
+
+                    <a
+                        href="{{ url_for('main.edit_ticket', ticket_id=ticket.id) }}"
+                        class="btn btn-warning w-100 mb-2"
+                    >
+                        <i class="bi bi-pencil"></i>
+                        Upravit ticket
+                    </a>
+
+                {% endif %}
+
+
+                {% if session.get("role") == "admin" %}
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('main.delete_ticket', ticket_id=ticket.id) }}"
+                    >
+                        <button
+                            type="submit"
+                            class="btn btn-outline-danger w-100"
+                        >
+                            <i class="bi bi-trash"></i>
+                            Smazat ticket
+                        </button>
+                    </form>
+
+                {% endif %}
 
             </div>
 
-            <button
-                type="submit"
-                class="btn btn-primary"
-            >
-                Přidat komentář
-            </button>
-
-        </form>
-
-
-        <h5>Stav</h5>
-
-        {% if ticket.status == "Nový" %}
-
-            <span class="badge bg-primary">
-                Nový
-            </span>
-
-        {% elif ticket.status == "Řeší se" %}
-
-            <span class="badge bg-warning text-dark">
-                Řeší se
-            </span>
-
-        {% elif ticket.status == "Vyřešeno" %}
-
-            <span class="badge bg-success">
-                Vyřešeno
-            </span>
-
-        {% endif %}
-
-
-        <hr>
-
-
-        <h5>Priorita</h5>
-
-        {% if ticket.priority == "Nízká" %}
-            <span class="badge bg-secondary">Nízká</span>
-
-        {% elif ticket.priority == "Střední" %}
-            <span class="badge bg-info text-dark">Střední</span>
-
-        {% elif ticket.priority == "Vysoká" %}
-            <span class="badge bg-warning text-dark">Vysoká</span>
-
-        {% elif ticket.priority == "Kritická" %}
-            <span class="badge bg-danger">Kritická</span>
-        {% endif %}
-
-        <hr>
-
-
-        {% if session.get("role") in ["technician", "admin"] %}
-        
-        <form
-            method="POST"
-            action="/ticket/{{ ticket.id }}/status"
-            class="mb-3"
-        >
-
-            <label class="form-label">
-                Změnit stav
-            </label>
-
-            <select
-                name="status"
-                class="form-select mb-2"
-            >
-
-                <option value="Nový">
-                    Nový
-                </option>
-
-                <option value="Řeší se">
-                    Řeší se
-                </option>
-
-                <option value="Vyřešeno">
-                    Vyřešeno
-                </option>
-
-            </select>
-
-
-            <button class="btn btn-primary">
-                Uložit stav
-            </button>
-
-        </form>
-        {% endif %}
-
-        {% if session.get("role") in ["technician", "admin"]
-            or ticket.user_id == session.get("user_id") %}
-        <a
-            href="/ticket/{{ ticket.id }}/edit"
-            class="btn btn-warning"
-        >
-            Upravit
-        </a>
-
-        {% endif %}
-
-        {% if session.get("role") == "admin" %}
-            <form
-                method="POST"
-                action="/ticket/{{ ticket.id }}/delete"
-                class="d-inline"
-            >
-
-                <button
-                    type="submit"
-                    class="btn btn-danger"
-                >
-                    Smazat
-                </button>
-
-            </form>
-        {% endif %}
-
-
-        <a
-            href="/"
-            class="btn btn-secondary"
-        >
-            Zpět
-        </a>
+        </div>
 
     </div>
 
 </div>
-
 {% endblock %}

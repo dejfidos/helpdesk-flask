@@ -1,25 +1,27 @@
 {% extends "base.html" %}
 
-
 {% block title %}
-Upravit ticket
+Upravit ticket | IT HelpDesk
 {% endblock %}
-
 
 {% block content %}
 
 <div class="row justify-content-center">
 
-    <div class="col-md-8">
+    <div class="col-lg-8">
 
-        <div class="card shadow-sm">
+        <div class="card">
 
-            <div class="card-body">
+            <div class="card-header py-3">
 
-                <h2 class="mb-4">
-                    Upravit ticket
-                </h2>
+                <h4 class="mb-0">
+                    <i class="bi bi-pencil-square"></i>
+                    Upravit ticket #{{ ticket.id }}
+                </h4>
 
+            </div>
+
+            <div class="card-body p-4">
 
                 <form method="POST">
 
@@ -49,43 +51,60 @@ Upravit ticket
                         <textarea
                             name="description"
                             class="form-control"
-                            rows="5"
+                            rows="6"
                             required
                         >{{ ticket.description }}</textarea>
 
                     </div>
 
+
                     <div class="mb-3">
-                    
-                        <label class="form-label">Priorita</label>
 
-                        <select name="priority" class="form-select">
+                        <label class="form-label">
+                            Priorita
+                        </label>
 
-                            <option value="Nízká"
-                                {% if ticket.priority == "Nízká" %}selected{% endif %}>
+                        <select
+                            name="priority"
+                            class="form-select"
+                        >
+
+                            <option
+                                value="Nízká"
+                                {% if ticket.priority == "Nízká" %}selected{% endif %}
+                            >
                                 Nízká
                             </option>
 
-                            <option value="Střední"
-                                {% if ticket.priority == "Střední" %}selected{% endif %}>
+                            <option
+                                value="Střední"
+                                {% if ticket.priority == "Střední" %}selected{% endif %}
+                            >
                                 Střední
                             </option>
 
-                            <option value="Vysoká"
-                                {% if ticket.priority == "Vysoká" %}selected{% endif %}>
+                            <option
+                                value="Vysoká"
+                                {% if ticket.priority == "Vysoká" %}selected{% endif %}
+                            >
                                 Vysoká
                             </option>
 
-                            <option value="Kritická"
-                                {% if ticket.priority == "Kritická" %}selected{% endif %}>
+                            <option
+                                value="Kritická"
+                                {% if ticket.priority == "Kritická" %}selected{% endif %}
+                            >
                                 Kritická
                             </option>
 
                         </select>
+
                     </div>
 
+
                     {% if session.get("role") in ["technician", "admin"] %}
-                    <div class="mb-3">
+
+                    <div class="mb-4">
 
                         <label class="form-label">
                             Stav
@@ -120,22 +139,28 @@ Upravit ticket
                         </select>
 
                     </div>
+
                     {% endif %}
 
-                    <button
-                        type="submit"
-                        class="btn btn-primary"
-                    >
-                        Uložit změny
-                    </button>
 
+                    <div class="d-flex gap-2">
 
-                    <a
-                        href="/ticket/{{ ticket.id }}"
-                        class="btn btn-secondary"
-                    >
-                        Zrušit
-                    </a>
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            <i class="bi bi-save"></i>
+                            Uložit změny
+                        </button>
+
+                        <a
+                            href="{{ url_for('main.ticket_detail', ticket_id=ticket.id) }}"
+                            class="btn btn-outline-secondary"
+                        >
+                            Zrušit
+                        </a>
+
+                    </div>
 
                 </form>
 

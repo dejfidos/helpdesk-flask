@@ -67,6 +67,91 @@ Tickety | IT Helpdesk
         </div>
     </div>
 </div>
+<form method="GET" class="row g-2 mb-4">
+
+    <div class="col-md-4">
+        <input
+            type="text"
+            name="search"
+            class="form-control"
+            placeholder="Hledat podle názvu..."
+            value="{{ search }}"
+        >
+    </div>
+
+    <div class="col-md-3">
+        <select name="status" class="form-select">
+
+            <option value="">
+                Všechny stavy
+            </option>
+
+            <option value="Nový"
+                {% if selected_status == "Nový" %}selected{% endif %}>
+                Nový
+            </option>
+
+            <option value="Řeší se"
+                {% if selected_status == "Řeší se" %}selected{% endif %}>
+                Řeší se
+            </option>
+
+            <option value="Vyřešeno"
+                {% if selected_status == "Vyřešeno" %}selected{% endif %}>
+                Vyřešeno
+            </option>
+
+
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <select name="priority" class="form-select">
+
+            <option value="">
+                Všechny priority
+            </option>
+
+            <option value="Nízká"
+                {% if selected_priority == "Nízká" %}selected{% endif %}>
+                Nízká
+            </option>
+
+            <option value="Střední"
+                {% if selected_priority == "Střední" %}selected{% endif %}>
+                Střední
+            </option>
+
+            <option value="Vysoká"
+                {% if selected_priority == "Vysoká" %}selected{% endif %}>
+                Vysoká
+            </option>
+
+            <option value="Kritická"
+                {% if selected_priority == "Kritická" %}selected{% endif %}>
+                Kritická
+            </option>
+            
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button
+            type="submit"
+            class="btn btn-primary w-100"
+        >
+        Filtrovat
+        </button>
+    </div>
+
+</form>
+
+<a
+    href="{{ url_for('main.index') }}"
+    class="btn btn-outline-secondary mb-3"    
+>
+    Zrušit filtry
+</a>
 
 <h2 class="mb-3">
     Tickety

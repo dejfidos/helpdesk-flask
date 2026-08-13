@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 
-from models import Ticket, db, User
+from models import Ticket, db, User, Comment
 
 main = Blueprint("main", __name__)
 
@@ -40,7 +40,26 @@ def technician_required(view):
 @main.route("/")
 @login_required
 def index():
-    tickets = Ticket.query.all()
+    search = request.args.get("search", "")
+    status = request.args.get("status", "")
+    priority = request.args.get("priority", "")
+
+    query = Ticket.query
+
+    if search:
+        query = query.filter(
+            Ticket.title.ilike(f"%{search}%")
+        )
+
+    if status:
+        query = query.filter_by(status=status)
+
+    if priority:
+        query = query.filter_by(priority=priority)
+
+    tickets = query.order_by(
+        Ticket.created_at.desc()
+    ).all()
 
     new_count = Ticket.query.filter_by(status="Nový").count()
     progress_count = Ticket.query.filter_by(status="Řeší se").count()
@@ -51,7 +70,10 @@ def index():
         tickets=tickets,
         new_count=new_count,
         progress_count=progress_count,
-        done_count=done_count
+        done_count=done_count,
+        search=search,
+        selected_status=status,
+        selected_priority=priority
     )
 
 
@@ -155,6 +177,31 @@ def admin_users():
         users=users
     )
 
+@main.route("/ticket/<int:ticket_id>/comment", methods=["POST"])
+@login_required
+def add_comment(ticket_id):
+    ticket = db.get_or_404(Ticket, ticket_id)
+
+    message = request.form["message"].strip()
+
+    if not message:
+        return redirect(
+            url_for("main.ticket_detail", ticket_id=ticket.id)
+        )
+
+    comment = Comment(
+        ticket_id=ticket.id,
+        user_id=session["user_id"],
+        message=message
+    )
+
+    db.session.add(comment)
+    db.session.commit()
+
+    return redirect(
+        url_for("main.ticket_detail", ticket_id=ticket.id)
+    )
+
 @main.route("/admin/users/<int:user_id>/role", methods=["POST"])
 @login_required
 @admin_required
@@ -199,6 +246,25 @@ def assign_ticket(ticket_id):
         url_for("main.ticket_detail", ticket_id=ticket.id)
     )
 
+
+@main.route("/my-tickets")
+@login_required
+def my_tickets():
+    user_id = session["user_id"]
+
+    created_tickets = Ticket.query.filter_by(
+        user_id=user_id
+    ).order_by(Ticket.created_at.desc()).all()
+
+    assigned_tickets = Ticket.query.filter_by(
+        assigned_user_id=user_id
+    ).order_by(Ticket.created_at.desc()).all()
+
+    return render_template(
+        "my_tickets.html",
+        created_tickets=created_tickets,
+        assigned_tickets=assigned_tickets
+    )
 
 @main.route("/register", methods=["GET", "POST"])
 def register():

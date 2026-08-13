@@ -102,7 +102,71 @@
             {{ ticket.description }}
         </p>
 
+
         <hr>
+        <h3 class="mb-3">Komentáře</h3>
+
+        {% for comment in ticket.comments %}
+
+            <div class="card mb-3">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <strong>
+                            {{ comment.author.username }}
+                        </strong>
+
+                        <small class="text-muted">
+                            {{ comment.created_at.strftime("%d.%m.%Y %H:%M") }}
+                        </small>
+
+                    </div>
+
+                    <p class="mt-2 mb-0">
+                        {{ comment.message }}
+                    </p>
+
+                </div>
+            </div>
+
+        {% else %}
+
+            <p class="text-muted">
+                Zatím nejsou žádné komentáře.
+            </p>
+
+        {% endfor %}
+        <hr>
+        <form
+            method="POST"
+            action="{{ url_for('main.add_comment', ticket_id=ticket.id) }}"
+        >
+
+            <div class="mb-3">
+
+                <label class="form-label">
+                    Přidat komentář
+                </label>
+
+                <textarea
+                    name="message"
+                    class="form-control"
+                    rows="4"
+                    required
+                ></textarea>
+
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Přidat komentář
+            </button>
+
+        </form>
 
 
         <h5>Stav</h5>

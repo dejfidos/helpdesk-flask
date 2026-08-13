@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}
+Moje tickety
+{% endblock %}
+
+{% block content %}
+
+<h1 class="mb-4">Moje tickety</h1>
+
+<h3>Vytvořil jsem</h3>
+
+<div class="card shadow-sm mb-5">
+    <div class="card-body">
+
+        {% if created_tickets %}
+
+        <table class="table table-hover align-middle">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Název</th>
+                    <th>Stav</th>
+                    <th>Priorita</th>
+                    <th>Akce</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for ticket in created_tickets %}
+
+                <tr>
+
+                    <td>#{{ ticket.id }}</td>
+
+                    <td>{{ ticket.title }}</td>
+
+                    <td>{{ ticket.status }}</td>
+
+                    <td>{{ ticket.priority }}</td>
+
+                    <td>
+                        <a
+                            href="{{ url_for('main.ticket_detail', ticket_id=ticket.id) }}"
+                            class="btn btn-sm btn-outline-primary"
+                        >
+                            Detail
+                        </a>
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        {% else %}
+
+            <p class="text-muted mb-0">
+                Zatím jsi nevytvořil žádný ticket.
+            </p>
+
+        {% endif %}
+
+    </div>
+</div>
+
+
+<h3>Přiřazené mně</h3>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        {% if assigned_tickets %}
+
+        <table class="table table-hover align-middle">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Název</th>
+                    <th>Autor</th>
+                    <th>Stav</th>
+                    <th>Priorita</th>
+                    <th>Akce</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for ticket in assigned_tickets %}
+
+                <tr>
+
+                    <td>#{{ ticket.id }}</td>
+
+                    <td>{{ ticket.title }}</td>
+
+                    <td>
+                        {% if ticket.author %}
+                            {{ ticket.author.username }}
+                        {% else %}
+                            Neznámý
+                        {% endif %}
+                    </td>
+
+                    <td>{{ ticket.status }}</td>
+
+                    <td>{{ ticket.priority }}</td>
+
+                    <td>
+                        <a
+                            href="{{ url_for('main.ticket_detail', ticket_id=ticket.id) }}"
+                            class="btn btn-sm btn-outline-primary"
+                        >
+                            Detail
+                        </a>
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        {% else %}
+
+            <p class="text-muted mb-0">
+                Nemáš přiřazený žádný ticket.
+            </p>
+
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

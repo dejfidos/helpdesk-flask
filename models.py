@@ -69,3 +69,43 @@ class User(db.Model):
         nullable=False,
         default="user"
     )
+
+class Comment(db.Model):
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    ticket_id = db.Column(
+        db.Integer,
+        db.ForeignKey("ticket.id"),
+        nullable=False
+    )
+    
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=False
+    )
+    
+    message = db.Column(
+        db.Text,
+        nullable=False
+    )
+    
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow
+    )
+
+    ticket = db.relationship(
+        "Ticket",
+        backref="comments"
+    )
+
+    author = db.relationship(
+        "User",
+        backref="comments"
+    )

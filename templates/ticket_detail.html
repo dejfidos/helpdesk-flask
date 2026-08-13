@@ -102,6 +102,65 @@
             {{ ticket.description }}
         </p>
 
+        <hr>
+
+        <h3>Přílohy</h3>
+
+        <form
+            method="POST"
+            action="{{ url_for('main.upload_attachment', ticket_id=ticket.id) }}"
+            enctype="multipart/form-data"
+            class="mb-4"
+        >
+
+            <div class="mb-3">
+
+                <input
+                    type="file"
+                    name="file"
+                    class="form-control"
+                    required
+                >
+
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                Nahrát přílohu
+            </button>
+
+        </form>
+
+        {% if ticket.attachments %}
+
+            <ul class="list-group">
+
+                {% for attachment in ticket.attachments %}
+
+                    <li class="list-group-item">
+
+                        📎 {{ attachment.filename }}
+
+                        <small class="text-muted">
+                            nahrál {{ attachment.uploader.username }}
+                        </small>
+
+                    </li>
+
+                {% endfor %}
+
+            </ul>
+
+        {% else %}
+
+            <p class="text-muted">
+                Ticket zatím nemá žádné přílohy.
+            </p>
+
+        {% endif %}
+
 
         <hr>
         <h3 class="mb-3">Komentáře</h3>
@@ -127,6 +186,22 @@
                     <p class="mt-2 mb-0">
                         {{ comment.message }}
                     </p>
+                    {% if comment.user_id == session.get("user_id")
+                    or session.get("role") == "admin" %}
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('main.delete_comment', comment_id=comment.id) }}"
+                    >
+                        <button
+                            class="btn btn-sm btn-outline-danger"
+                            type="submit"
+                        >
+                            🗑 Smazat
+                        </button>
+                    </form>
+
+                    {% endif %}
 
                 </div>
             </div>

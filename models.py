@@ -102,10 +102,57 @@ class Comment(db.Model):
 
     ticket = db.relationship(
         "Ticket",
-        backref="comments"
+        backref=db.backref(
+            "comments",
+            order_by="Comment.created_at"
+        )
     )
 
     author = db.relationship(
         "User",
         backref="comments"
+    )
+
+class Attachment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    ticket_id = db.Column(
+        db.Integer,
+        db.ForeignKey("ticket.id"),
+        nullable=False
+    )
+
+    user_id = db.Column(
+            db.Integer,
+            db.ForeignKey("user.id"),
+            nullable=False
+    )
+
+    filename = db.Column(
+        db.String(255),
+        nullable=False
+    )        
+
+    stored_filename = db.Column(
+        db.String(255),
+        nullable=False
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow
+    )
+
+    ticket = db.relationship(
+        "Ticket",
+        backref=db.backref(
+            "attachments",
+            order_by="Attachment.created_at"
+        )
+    )
+
+    uploader = db.relationship(
+        "User",
+        backref="attachments"
     )

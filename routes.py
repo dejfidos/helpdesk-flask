@@ -1,10 +1,32 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, session, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+from werkzeug.utils import secure_filename
 
-from models import Ticket, db, User, Comment
+import os
+import uuid
+
+
+from models import Ticket, db, User, Comment, Attachment
 
 main = Blueprint("main", __name__)
+
+UPLOAD_FOLDER = os.path.join("uploads")
+
+ALLOWED_EXTENSIONS = {
+    "png",
+    "jpg",
+    "jpeg",
+    "pdf",
+    "txt",
+    "log"
+}
+
+def allowed_file(filename):
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+    )
 
 def login_required(view):
     @wraps(view)
@@ -202,6 +224,26 @@ def add_comment(ticket_id):
         url_for("main.ticket_detail", ticket_id=ticket.id)
     )
 
+@main.route("/comment/<int:comment_id>/delete", methods=["POST"])
+@login_required
+def delete_comment(comment_id):
+    comment = db.get_or_404(Comment, comment_id)
+
+    if (
+        comment.user_id != session["user_id"]
+        and session.get("role") != "admin"
+    ):
+        return "Nemáš oprávnění smazat tento komentář", 403
+
+    ticket_id = comment.ticket_id
+
+    db.session.delete(comment)
+    db.session.commit()
+
+    return redirect(
+        url_for("main.ticket_detail", ticket_id=ticket_id)
+    )
+
 @main.route("/admin/users/<int:user_id>/role", methods=["POST"])
 @login_required
 @admin_required
@@ -321,3 +363,48 @@ def logout():
     session.clear()
 
     return redirect(url_for("main.login"))
+
+@main.route("/ticket/<int:ticket_id>/attachment", methods=["POST"])
+@login_required
+def upload_attachment(ticket_id):
+    ticket = db.get_or_404(Ticket, ticket_id)
+
+    if "file" not in request.files:
+        return "Nebyl vybrán žádný soubor.", 400
+
+    file = request.files["file"]
+
+    if file.filename == "":
+        return "Nebyl vybrán žádný soubor.", 400
+
+    if not allowed_file(file.filename):
+        return "Tento typ souboru není povolen.", 400
+
+    original_filename = secure_filename(file.filename)
+
+    extension = original_filename.rsplit(".", 1)[1].lower()
+
+    stored_filename = f"{uuid.uuid4().hex}.{extension}"
+
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+    file.save(
+        os.path.join(
+            UPLOAD_FOLDER,
+            stored_filename
+        )
+    )
+
+    attachment = Attachment(
+        ticket_id=ticket.id,
+        user_id=session["user_id"],
+        filename=original_filename,
+        stored_filename=stored_filename
+    )
+
+    db.session.add(attachment)
+    db.session.commit()
+
+    return redirect(
+        url_for("main.ticket_detail", ticket_id=ticket.id)
+    )

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, send_from_directory
+from flask import Blueprint, render_template, request, redirect, url_for, session, send_from_directory, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from werkzeug.utils import secure_filename
@@ -118,6 +118,8 @@ def new_ticket():
         db.session.add(ticket)
         db.session.commit()
 
+        flash("Nový ticket založen.", "success")
+
         return redirect(url_for("main.index"))
 
     return render_template("new_ticket.html")
@@ -149,6 +151,8 @@ def change_status(ticket_id):
 
     db.session.commit()
 
+    flash("Ticket byl editován.", "success")
+
     return redirect(
         url_for("main.ticket_detail", ticket_id=ticket_id)
     )
@@ -170,6 +174,8 @@ def edit_ticket(ticket_id):
 
         db.session.commit()
 
+        flash("Ticket byl editován.", "success")
+
         return redirect(
             url_for("main.ticket_detail", ticket_id=ticket_id)
         )
@@ -185,6 +191,8 @@ def delete_ticket(ticket_id):
 
     db.session.delete(ticket)
     db.session.commit()
+
+    flash("Ticket byl smazán.", "warning")
 
     return redirect(url_for("main.index"))
 
@@ -220,6 +228,8 @@ def add_comment(ticket_id):
     db.session.add(comment)
     db.session.commit()
 
+    flash("Komenář byl přidán.", "success")
+
     return redirect(
         url_for("main.ticket_detail", ticket_id=ticket.id)
     )
@@ -239,6 +249,8 @@ def delete_comment(comment_id):
 
     db.session.delete(comment)
     db.session.commit()
+
+    flash("Komentář byl odstraněn.", "warning")
 
     return redirect(
         url_for("main.ticket_detail", ticket_id=ticket_id)
@@ -263,6 +275,8 @@ def change_user_role(user_id):
     user.role = new_role
     db.session.commit()
 
+    flash("Role byla změněna.", "success")
+
     return redirect(url_for("main.admin_users"))
 
 
@@ -283,6 +297,8 @@ def assign_ticket(ticket_id):
         ticket.assigned_user_id = user.id
 
     db.session.commit()
+
+    flash("Přiřazení ticketu bylo změněno.", "success")
 
     return redirect(
         url_for("main.ticket_detail", ticket_id=ticket.id)
@@ -317,7 +333,8 @@ def register():
         existing_user = User.query.filter_by(username=username).first()
 
         if existing_user:
-            return "Uživatel již existuje"
+            flash("Uživatel již existuje.", "warning")
+            return redirect(url_for("main.register"))
 
         hashed_password = generate_password_hash(password)
 
@@ -329,6 +346,7 @@ def register():
         db.session.add(user)
         db.session.commit()
 
+        flash("Registrace proběhla úspěšně. Nyní se můžete přihlásit.", "success")
         return redirect(url_for("main.index"))
 
     return render_template("register.html")
@@ -350,9 +368,11 @@ def login():
             session["username"] = user.username
             session["role"] = user.role
 
+            flash(f"Vítej, {user.username}!", "success")
             return redirect(url_for("main.index"))
 
-        return "Špatné jméno nebo heslo"
+        flash("Špatné uživatelské jméno nebo heslo.", "danger")
+        return redirect(url_for("main.login"))
 
     return render_template("login.html")
 
@@ -360,7 +380,11 @@ def login():
 @main.route("/logout")
 def logout():
 
+    username = session.get("username")
+
     session.clear()
+
+    flash(f"Uživatel {username} byl odhlášen.", "info")
 
     return redirect(url_for("main.login"))
 
@@ -406,6 +430,8 @@ def upload_attachment(ticket_id):
     db.session.add(attachment)
     db.session.commit()
 
+    flash("Příloha byla nahrána.", "success")
+
     return redirect(
         url_for("main.ticket_detail", ticket_id=ticket.id)
     )
@@ -447,6 +473,8 @@ def delete_attachment(attachment_id):
 
     db.session.delete(attachment)
     db.session.commit()
+
+    flash("Příloha byla smazána.", "warning")
 
     return redirect(
         url_for("main.ticket_detail", ticket_id=ticket_id)

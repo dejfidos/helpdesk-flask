@@ -83,6 +83,8 @@
                             <form
                                 method="POST"
                                 action="{{ url_for('main.delete_comment', comment_id=comment.id) }}"
+                                class="confirm-delete"
+                                data-confirm-message="Opravdu chceš smazat tento komentář? Tuto akci nelze vrátit."
                             >
                                 <button
                                     type="submit"
@@ -186,6 +188,8 @@
                                     <form
                                         method="POST"
                                         action="{{ url_for('main.delete_attachment', attachment_id=attachment.id) }}"
+                                        class="confirm-delete"
+                                        data-confirm-message="Opravdu chceš smazat tuto přílohu?"
                                     >
                                         <button
                                             type="submit"
@@ -468,6 +472,8 @@
                     <form
                         method="POST"
                         action="{{ url_for('main.delete_ticket', ticket_id=ticket.id) }}"
+                        class="confirm-delete"
+                        data-confirm-message="Opravdu chceš smazat tento ticket? Tuto akci nelze vrátit."
                     >
                         <button
                             type="submit"

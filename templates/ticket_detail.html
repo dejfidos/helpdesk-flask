@@ -247,6 +247,64 @@
 
         </div>
 
+    
+
+    <div class="card mt-4">
+
+        <div class="card-header py-3">
+            <h5 class="mb-0">
+                <i class="bi bi-clock-history"></i>
+                Historie ticketu
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            {% if ticket.history %}
+
+                <div class="list-group list-group-flush">
+
+                    {% for item in ticket.history %}
+
+                        <div class="list-group-item px-0">
+
+                            <div class="d-flex justify-content-between">
+
+                                <div>
+                                    <strong>
+                                        {% if item.user %}
+                                            {{ item.user.username }}
+                                        {% else %}
+                                            Systém
+                                        {% endif %}
+                                    </strong>
+
+                                    <div>
+                                        {{ item.action }}
+                                    </div>
+                                </div>
+
+                                <small class="text-muted">
+                                    {{ item.created_at.strftime("%d.%m.%Y %H:%M") }}
+                                </small>
+                            </div>
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <p class="text-muted mb-0">
+                    Historie je zatím prázdná
+                </p>
+
+            {% endif %}
+        </div>
+
+    </div>
+
     </div>
 
 

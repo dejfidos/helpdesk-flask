@@ -156,3 +156,42 @@ class Attachment(db.Model):
         "User",
         backref="attachments"
     )
+
+class TicketHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    ticket_id = db.Column(
+        db.Integer,
+        db.ForeignKey("ticket.id"),
+        nullable=False
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=True
+    )
+
+    action = db.Column(
+        db.String(255),
+        nullable=False
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=datetime.utcnow
+    )
+
+    ticket = db.relationship(
+        "Ticket",
+        backref=db.backref(
+            "history",
+            order_by="TicketHistory.created_at"
+        )
+    )
+
+    user = db.relationship(
+        "User",
+        backref="history_entries"
+    )

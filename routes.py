@@ -7,7 +7,7 @@ import os
 import uuid
 
 
-from models import Ticket, db, User, Comment, Attachment
+from models import Ticket, db, User, Comment, Attachment, TicketHistory
 
 main = Blueprint("main", __name__)
 
@@ -57,6 +57,15 @@ def technician_required(view):
         return view(*args, **kwargs)
 
     return wrapped_view
+
+def add_history(ticket_id, action):
+    history = TicketHistory(
+        ticket_id=ticket_id,
+        user_id=session.get("user_id"),
+        action=action
+    )
+
+    db.session.add(history)
 
 
 @main.route("/")
@@ -116,6 +125,13 @@ def new_ticket():
         )
 
         db.session.add(ticket)
+        db.session.flush()
+
+        add_history(
+            ticket.id,
+            "Vytvořil ticket"
+        )
+
         db.session.commit()
 
         flash("Nový ticket založen.", "success")
@@ -141,20 +157,41 @@ def ticket_detail(ticket_id):
 
 @main.route("/ticket/<int:ticket_id>/status", methods=["POST"])
 @login_required
-@technician_required
 def change_status(ticket_id):
     ticket = db.get_or_404(Ticket, ticket_id)
 
-    new_status = request.form["status"]
+    if session.get("role") not in ["technician", "admin"]:
+        flash("Nemáš oprávnění měnit stav ticketu.", "danger")
+        return redirect(
+            url_for("main.ticket_detail", ticket_id=ticket.id)
+        )
 
-    ticket.status = new_status
+    new_status = request.form.get("status")
+    old_status = ticket.status
 
-    db.session.commit()
+    if old_status != new_status:
+        ticket.status = new_status
 
-    flash("Ticket byl editován.", "success")
+        add_history(
+            ticket.id,
+            f"Změnil stav z '{old_status}' na '{new_status}'"
+        )
+
+        db.session.commit()
+
+        flash(
+            f"Stav změněn: {old_status} → {new_status}.",
+            "success"
+        )
+
+    else:
+        flash(
+            "Stav ticketu se nezměnil.",
+            "info"
+        )
 
     return redirect(
-        url_for("main.ticket_detail", ticket_id=ticket_id)
+        url_for("main.ticket_detail", ticket_id=ticket.id)
     )
 
 
@@ -226,6 +263,12 @@ def add_comment(ticket_id):
     )
 
     db.session.add(comment)
+
+    add_history(
+        ticket.id,
+        "Přidal komentář"
+    )
+
     db.session.commit()
 
     flash("Komenář byl přidán.", "success")
@@ -243,11 +286,23 @@ def delete_comment(comment_id):
         comment.user_id != session["user_id"]
         and session.get("role") != "admin"
     ):
-        return "Nemáš oprávnění smazat tento komentář", 403
+        flash("Nemáš oprávnění smazat tento kometář", "danger")
+        return redirect(
+            url_for(
+                "main.ticket_detail",
+                ticket_id=comment.ticket_id
+            )
+        )
 
     ticket_id = comment.ticket_id
 
     db.session.delete(comment)
+
+    add_history(
+        ticket_id,
+        "Smazal komentář"
+    )
+
     db.session.commit()
 
     flash("Komentář byl odstraněn.", "warning")
@@ -286,19 +341,48 @@ def assign_ticket(ticket_id):
     ticket = db.get_or_404(Ticket, ticket_id)
 
     if session.get("role") not in ["technician", "admin"]:
-        return "Nemáš oprávnění přiřazovat tickety.", 403
+        flash("Nemáš oprávnění měnit přiřazení ticketu.", "danger")
+        return redirect(
+            url_for("main.ticket_detail", ticket_id=ticket.id)
+        )
 
-    assigned_user_id = request.form["assigned_user_id"]
+    # Původní přiřazení
+    old_user_id = ticket.assigned_user_id
+    old_user = (
+        ticket.assigned_user.username
+        if ticket.assigned_user
+        else "Nikdo"
+    )
 
-    if assigned_user_id == "":
-        ticket.assigned_user_id = None
+    # Hodnota z formuláře
+    assigned_user_id = request.form.get("assigned_user_id")
+
+    if assigned_user_id:
+        new_user = db.get_or_404(User, int(assigned_user_id))
+        ticket.assigned_user_id = new_user.id
+        new_user_name = new_user.username
     else:
-        user = db.get_or_404(User, int(assigned_user_id))
-        ticket.assigned_user_id = user.id
+        ticket.assigned_user_id = None
+        new_user_name = "Nikdo"
+
+    # Historii zapíšeme pouze při skutečné změně
+    if old_user_id != ticket.assigned_user_id:
+        add_history(
+            ticket.id,
+            f"Změnil přiřazení z '{old_user}' na '{new_user_name}'"
+        )
+
+        flash(
+            f"Přiřazení změněno: {old_user} → {new_user_name}.",
+            "success"
+        )
+    else:
+        flash(
+            "Přiřazení se nezměnilo.",
+            "info"
+        )
 
     db.session.commit()
-
-    flash("Přiřazení ticketu bylo změněno.", "success")
 
     return redirect(
         url_for("main.ticket_detail", ticket_id=ticket.id)
@@ -428,6 +512,12 @@ def upload_attachment(ticket_id):
     )
 
     db.session.add(attachment)
+
+    add_history(
+        ticket.id,
+        f"Nahrál přílohu '{attachment.filename}'"
+    )
+
     db.session.commit()
 
     flash("Příloha byla nahrána.", "success")
@@ -471,7 +561,15 @@ def delete_attachment(attachment_id):
     if os.path.exists(file_path):
         os.remove(file_path)
 
+    filename = attachment.filename
+
     db.session.delete(attachment)
+
+    add_history(
+        ticket_id,
+        f"Smazal přílohu '{attachment.filename}'"
+    )
+
     db.session.commit()
 
     flash("Příloha byla smazána.", "warning")

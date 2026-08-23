@@ -115,12 +115,14 @@ def new_ticket():
         title = request.form["title"]
         description = request.form["description"]
         priority = request.form["priority"]
+        category = request.form["category"]
 
         ticket = Ticket(
             title=title,
             description=description,
             status="Nový",
             priority=priority,
+            category=category,
             user_id=session["user_id"]
         )
 
@@ -201,13 +203,76 @@ def edit_ticket(ticket_id):
     ticket = db.get_or_404(Ticket, ticket_id)
 
     if session.get("role") == "user" and ticket.user_id != session.get("user_id"):
-        return "Nemáš oprávnění upravovat tento ticket.", 403
+        flash ("Nemáš oprávnění upravovat tento ticket.", "danger")
+        return redirect(
+            url_for("main.ticket_detail", ticket_id=ticket.id)
+        )
 
     if request.method == "POST":
-        ticket.title = request.form["title"]
-        ticket.description = request.form["description"]
-        ticket.status = request.form["status"]
-        ticket.priority = request.form["priority"]
+        new_title = request.form["title"].strip()
+        new_description = request.form["description"].strip()
+        new_priority = request.form["priority"].strip()
+
+        # Změna názvu
+        if ticket.title.strip() != new_title:
+            old_title = ticket.title
+
+            ticket.title = new_title
+
+            add_history(
+                ticket.id,
+                f"Změnil název z '{old_title}' na '{new_title}'"
+            )
+
+        # Změna popisu
+        if ticket.description != new_description:
+            ticket.description = new_description
+
+            add_history(
+                ticket.id,
+                "Upravil popis ticketu"
+            )
+
+        #Změna priority
+        if ticket.priority.strip() != new_priority:
+            old_priority = ticket.priority
+
+            ticket.priority = new_priority
+
+            add_history(
+                ticket.id,
+                f"Změnil prioritu z '{old_priority}' na '{new_priority}'"
+            )
+
+        # Stav může změnit jen technik nebo admin
+        if session.get("role") in ["technician", "admin"]:
+            new_status = request.form.get("status")
+
+            if new_status and ticket.status != new_status:
+                old_status = ticket.status
+
+                ticket.status = new_status
+
+                add_history(
+                    ticket.id,
+                    f"Změnil stav z '{old_status}' na '{new_status}'"
+                )
+
+        #Změna kategorie, může jen admin nebo technik
+        if session.get("role") in ["technician", "admin"]:
+            new_category = request.form.get("category")
+
+            if new_category and ticket.category !=new_category:
+                old_category = ticket.category
+                ticket.category = new_category
+
+                add_history(
+                    ticket.id,
+                    f"Změnil kategorii z '{old_category}' na '{new_category}'"
+                )
+
+                changed = True
+
 
         db.session.commit()
 

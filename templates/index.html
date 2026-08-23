@@ -259,6 +259,7 @@ Tickety | IT Helpdesk
                     <th>Ticket</th>
                     <th>Autor</th>
                     <th>Přiřazeno</th>
+                    <th>Kategorie</th>
                     <th>Priorita</th>
                     <th>Stav</th>
                     <th></th>
@@ -312,7 +313,15 @@ Tickety | IT Helpdesk
                         {% endif %}
                     </td>
 
+                    <td>
+                        <span class="badge bg-dark">
+                            <i class="bi bi-tag"></i>
+                            {{ ticket.category }}
+                        </span>
 
+                    </td>
+                    
+                    
                     <td>
 
                         {% if ticket.priority == "Nízká" %}

@@ -11,6 +11,7 @@ class Ticket(db.Model):
     description = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(50), nullable=False, default="Nový")
     priority = db.Column(db.String(50), nullable=False, default="Střední")
+    category = db.Column(db.String(50), nullable=False, default="Ostatní")
 
 
     assigned_user_id = db.Column(
@@ -195,3 +196,17 @@ class TicketHistory(db.Model):
         "User",
         backref="history_entries"
     )
+
+    @property
+    def created_at_local(self):
+        if self.created_at is None:
+            return None
+    
+        utc_time = self.created_at.replace(
+            tzinfo=timezone.utc
+            )
+    
+        return utc_time.astimezone(
+            ZoneInfo("Europe/Prague")
+        )
+    

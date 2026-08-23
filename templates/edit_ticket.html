@@ -140,6 +140,43 @@ Upravit ticket | IT HelpDesk
 
                     </div>
 
+                    {% if session.get("role") in ["technician", "admin"] %}    
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Kategorie
+                        </label>
+
+                        <select
+                            name="category"
+                            class="form-select"
+                        >
+
+                            {% for category in [
+                                "Hardware",
+                                "Software",
+                                "Síť",
+                                "Tiskárny",
+                                "SAP",
+                                "E-mail",
+                                "Přístupy",
+                                "Ostatní"
+                            ] %}
+
+                                <option
+                                    value="{{ category }}"
+                                    {% if ticket.category == category %}selected{% endif %}
+                                >
+                                    {{ category }}
+                                </option>
+                
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+                    {% endif %}
+
                     {% endif %}
 
 

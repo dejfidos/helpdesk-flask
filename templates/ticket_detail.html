@@ -285,7 +285,7 @@
                                 </div>
 
                                 <small class="text-muted">
-                                    {{ item.created_at.strftime("%d.%m.%Y %H:%M") }}
+                                    {{ item.created_at_local.strftime("%d.%m.%Y %H:%M") }}
                                 </small>
                             </div>
                         </div>
@@ -400,6 +400,17 @@
                     {% else %}
                         Nepřiřazeno
                     {% endif %}
+
+                </div>
+
+                <div class="mb=3">
+                    <div class="text-muted small">
+                        Kategorie
+                    </div>
+
+                    <span class="badge bg-dark">
+                        {{ ticket.category }}
+                    </span>
 
                 </div>
 

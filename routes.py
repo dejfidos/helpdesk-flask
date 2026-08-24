@@ -71,15 +71,21 @@ def add_history(ticket_id, action):
 @main.route("/")
 @login_required
 def index():
-    search = request.args.get("search", "")
-    status = request.args.get("status", "")
-    priority = request.args.get("priority", "")
+    search = request.args.get("search", "").strip()
+    status = request.args.get("status", "").strip()
+    priority = request.args.get("priority", "").strip()
+    category = request.args.get("category", "").strip()
+    sort = request.args.get("sort", "newest")
 
     query = Ticket.query
 
     if search:
         query = query.filter(
-            Ticket.title.ilike(f"%{search}%")
+            db.or_(
+                Ticket.title.ilike(f"%{search}%"),
+                Ticket.description.ilike(f"%{search}%"),
+                Ticket.category.ilike(f"%{search}%")
+            )
         )
 
     if status:
@@ -88,9 +94,43 @@ def index():
     if priority:
         query = query.filter_by(priority=priority)
 
-    tickets = query.order_by(
-        Ticket.created_at.desc()
-    ).all()
+    if category:
+        query = query.filter_by(category=category)
+
+    
+
+    if sort == "oldest":
+        query = query.order_by(Ticket.created_at.asc())
+
+    elif sort == "priority":
+        priority_order = db.case(
+            (Ticket.priority == "Kritická", 1),
+            (Ticket.priority == "Vysoká", 2),
+            (Ticket.priority == "Střední", 3),
+            (Ticket.priority == "Nízká", 4),
+            else_=5
+        )
+
+        query = query.order_by(
+            priority_order,
+            Ticket.created_at.desc()
+        )
+
+    elif sort == "id":
+        query = query.order_by(Ticket.id.desc())
+
+    else:
+        query = query.order_by(Ticket.created_at.desc())
+
+    page = request.args.get("page", 1, type=int)
+
+    pagination = query.paginate(
+        page=page,
+        per_page=10,
+        error_out=False
+    )
+
+    tickets = pagination.items
 
     new_count = Ticket.query.filter_by(status="Nový").count()
     progress_count = Ticket.query.filter_by(status="Řeší se").count()
@@ -104,7 +144,10 @@ def index():
         done_count=done_count,
         search=search,
         selected_status=status,
-        selected_priority=priority
+        selected_priority=priority,
+        selected_category=category,
+        pagination=pagination,
+        selected_sort=sort
     )
 
 

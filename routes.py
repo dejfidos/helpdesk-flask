@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from werkzeug.utils import secure_filename
+from datetime import datetime
 
 import os
 import uuid
@@ -119,6 +120,17 @@ def index():
     elif sort == "id":
         query = query.order_by(Ticket.id.desc())
 
+    elif sort == "sla":
+
+        sla_deadline_order = db.case(
+            (Ticket.priority == "Kritická", Ticket.created_at + 4),
+            (Ticket.priority == "Vysoká", Ticket.created_at + 24),
+            (Ticket.priority == "Střední", Ticket.created_at + 72),
+            (Ticket.priority == "Nízká", Ticket.created_at + 168),
+        )
+
+        query = query.order_by(sla_deadline_order.asc())
+
     else:
         query = query.order_by(Ticket.created_at.desc())
 
@@ -217,6 +229,12 @@ def change_status(ticket_id):
     if old_status != new_status:
         ticket.status = new_status
 
+        if new_status == "Vyřešeno":
+            ticket.resolved_at = datetime.utcnow()
+
+        elif old_status == "Vyřešeno":
+            ticket.resolved_at = None
+
         add_history(
             ticket.id,
             f"Změnil stav z '{old_status}' na '{new_status}'"
@@ -295,6 +313,12 @@ def edit_ticket(ticket_id):
                 old_status = ticket.status
 
                 ticket.status = new_status
+
+                if new_status == "Vyřešeno":
+                    ticket.resolved_at = datetime.utcnow()
+                
+                elif old_status == "Vyřešeno":
+                    ticket.resolved_at = None
 
                 add_history(
                     ticket.id,

@@ -371,6 +371,62 @@
                     {% endif %}
                 </div>
 
+                <div class="mb-3">
+                    <div class="text-muted small">
+                        SLA
+                    </div>
+
+                    {% if ticket.sla_status == "splněno" %}
+
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle"></i>
+                            Splněno
+                        </span>
+
+                    {% elif ticket.sla_status == "v pořádku" %}
+
+                        <span class="badge bg-success">
+                            <i class="bi bi-clock"></i>
+                            V pořádku
+                        </span>
+
+                    {% elif ticket.sla_status == "blíží se" %}
+
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Blíží se ddeadline
+                        </span>
+
+                    {% elif ticket.sla_status == "překročeno" %}
+
+                        <span class="badge bg-danger">
+                            <i class="bi bi-exclamation-circle"></i>
+                            SLA překročeno
+                        </span>
+
+                    {% endif %}
+
+                    {% if ticket.sla_remaining_text %}
+
+                        <div class="fw-semibold mt-2">
+                            {{ ticket.sla_remaining_text }}
+                        </div>
+                    
+                    {% endif %}
+
+                    {% if ticket.sla_deadline_local %}
+
+                        <div class="text-muted small mt-1">
+                            Deadline:
+                            {{ ticket.sla_deadline.strftime("%d.%m.%Y %H:%M") }}
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+                
+
 
                 <div class="mb-3">
 

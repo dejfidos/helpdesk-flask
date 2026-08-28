@@ -345,6 +345,13 @@ Tickety | IT Helpdesk
             >
                 ID
             </option>
+
+            <option
+                value="sla"
+                {% if selected_sort == "sla" %}selected{% endif %}
+            >
+                SLA = nejdříve
+            </option>
         </select>
 
     </form>
@@ -490,6 +497,38 @@ Tickety | IT Helpdesk
                             </span>
                         {% endif %}
 
+                    </td>
+
+                    <td>
+                        {% if ticket.sla_status == "splněno" %}
+
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i>
+                                SLA splněno
+                            </span>
+
+                        {% elif ticket.sla_status == "v pořádku" %}
+
+                            <span class="badge bg-success">
+                                <i class="bi bi-clock"></i>
+                                {{ ticket.sla_remaining_text }}
+                            </span>
+
+                        {% elif ticket.sla_status == "blíží se" %}
+
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                {{ ticket.sla_remaining_text }}
+                            </span>
+
+                        {% elif ticket.sla_status == "překročeno" %}
+
+                            <span class="badge bg-danger">
+                                <i class="bi bi-exclamation-circle"></i>
+                                {{ ticket.sla_remaining_text }}
+                            </span>
+
+                        {% endif %}
                     </td>
 
 

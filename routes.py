@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from werkzeug.utils import secure_filename
 from datetime import datetime
+from sqlalchemy import case, func
 
 import os
 import uuid
@@ -76,9 +77,18 @@ def index():
     status = request.args.get("status", "").strip()
     priority = request.args.get("priority", "").strip()
     category = request.args.get("category", "").strip()
+    sla = request.args.get("sla", "").strip()
     sort = request.args.get("sort", "newest")
 
     query = Ticket.query
+
+    sla_deadline = case(
+                (Ticket.priority == "Kritická", func.datetime(Ticket.created_at, "+4 hours")),
+                (Ticket.priority == "Vysoká", func.datetime(Ticket.created_at, "+24 hours")),
+                (Ticket.priority == "Střední", func.datetime(Ticket.created_at, "+72 hours")),
+                (Ticket.priority == "Nízká", func.datetime(Ticket.created_at, "+168 hours")),
+                else_=func.datetime(Ticket.created_at, "+168 hours")
+            )    
 
     if search:
         query = query.filter(
@@ -98,6 +108,44 @@ def index():
     if category:
         query = query.filter_by(category=category)
 
+    #SLA filtr
+    if sla == "overdue":
+        query = query.filter(
+            db.or_(
+                #otevřený ticket po deadline
+                db.and_(
+                    Ticket.status != "Vyřešeno",
+                    func.datetime("now") > sla_deadline
+                ),
+
+                #Vyřešený ticket, ale až po deadline
+                db.and_(
+                    Ticket.status == "Vyřešeno",
+                    Ticket.resolved_at.isnot(None),
+                    func.datetime(Ticket.resolved_at) > sla_deadline
+                )
+            )
+        )
+
+    elif sla == "warning":
+        query = query.filter(
+            Ticket.status != "Vyřešeno",
+            func.datetime("now") <= sla_deadline,
+            sla_deadline <= func.datetime("now", "+2 hours")
+        )
+
+    elif sla == "ok":
+        query = query.filter(
+            Ticket.status != "Vyřešeno",
+            sla_deadline > func.datetime("now", "+2 hours")    
+        )
+
+    elif sla == "completed":
+        query = query.filter(
+            Ticket.status == "Vyřešeno",
+            Ticket.resolved_at.isnot(None),
+            func.datetime(Ticket.resolved_at) <= sla_deadline
+        )
     
 
     if sort == "oldest":
@@ -122,14 +170,23 @@ def index():
 
     elif sort == "sla":
 
-        sla_deadline_order = db.case(
-            (Ticket.priority == "Kritická", Ticket.created_at + 4),
-            (Ticket.priority == "Vysoká", Ticket.created_at + 24),
-            (Ticket.priority == "Střední", Ticket.created_at + 72),
-            (Ticket.priority == "Nízká", Ticket.created_at + 168),
+        sla_deadline = case(
+            (Ticket.priority == "Kritická", func.datetime(Ticket.created_at, "+4 hours")),
+            (Ticket.priority == "Vysoká", func.datetime(Ticket.created_at, "+24 hours")),
+            (Ticket.priority == "Střední", func.datetime(Ticket.created_at, "+72 hours")),
+            (Ticket.priority == "Nízká", func.datetime(Ticket.created_at, "+168 hours")),
+            else_=func.datetime(Ticket.created_at, "+168 hours")
         )
 
-        query = query.order_by(sla_deadline_order.asc())
+        resolved_order = case(
+            (Ticket.status == "Vyřešeno", 1),
+            else_=0
+        )
+
+        query = query.order_by(
+            resolved_order.asc(),
+            sla_deadline.asc()
+        )
 
     else:
         query = query.order_by(Ticket.created_at.desc())
@@ -159,7 +216,8 @@ def index():
         selected_priority=priority,
         selected_category=category,
         pagination=pagination,
-        selected_sort=sort
+        selected_sort=sort,
+        selected_sla=sla
     )
 
 

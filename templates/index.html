@@ -270,6 +270,53 @@ Tickety | IT Helpdesk
 
                 </div>
 
+                <div class="col-lg-2">
+
+                    <label class="form-label">
+                        SLA
+                    </label>
+
+                    <select
+                        name="sla"
+                        class="form-select"
+                    >
+
+                        <option value="">
+                            Všechny
+                        </option>
+
+                        <option
+                            value="ok"
+                            {% if selected_sla == "ok" %}selected{% endif %}
+                        >
+                            V pořádku
+                        </option>
+
+                        <option
+                            value="warning"
+                            {% if selected_sla == "warning" %}selected{% endif %}
+                        >
+                            Blíží se
+                        </option>
+
+                        <option
+                            value="overdue"
+                            {% if selected_sla == "overdue" %}selected{% endif %}
+                        >
+                            Překročeno
+                        </option>
+
+                        <option
+                            value="completed"
+                            {% if selected_sla == "completed" %}selected{% endif %}
+                        >
+                            Splněno
+                        </option>
+
+                    </select>
+
+                </div>
+
             </div>
 
 
@@ -307,6 +354,7 @@ Tickety | IT Helpdesk
         <input type="hidden" name="status" value="{{ selected_status }}">
         <input type="hidden" name="priority" value="{{ selected_priority }}">
         <input type="hidden" name="category" value="{{ selected_category }}">
+        <input type="hidden" name="sla" value="{{ selected_sla }}">
 
         <label class="text-muted small mb-0">
             Řadit:
@@ -350,7 +398,7 @@ Tickety | IT Helpdesk
                 value="sla"
                 {% if selected_sort == "sla" %}selected{% endif %}
             >
-                SLA = nejdříve
+                SLA = nejurgentnější
             </option>
         </select>
 
@@ -393,6 +441,7 @@ Tickety | IT Helpdesk
                     <th>Kategorie</th>
                     <th>Priorita</th>
                     <th>Stav</th>
+                    <th>SLA</th>
                     <th></th>
                 </tr>
 
@@ -550,7 +599,7 @@ Tickety | IT Helpdesk
 
                 <tr>
                     <td
-                        colspan="7"
+                        colspan="9"
                         class="text-center text-muted py-5"
                     >
                         <i class="bi bi-inbox fs-1 d-block mb-2"></i>
@@ -582,7 +631,8 @@ Tickety | IT Helpdesk
                                 status=selected_status,
                                 priority=selected_priority,
                                 category=selected_category,
-                                sort=selected_sort
+                                sort=selected_sort,
+                                sla=selected_sla
                             ) }}"
                         >
                                 Předchozí
@@ -607,7 +657,8 @@ Tickety | IT Helpdesk
                                         status=selected_status,
                                         priority=selected_priority,
                                         category=selected_category,
-                                        sort=selected_sort
+                                        sort=selected_sort,
+                                        sla=selected_sla
                                     ) }}"
                                 >
                                     {{ page_num }}
@@ -631,7 +682,8 @@ Tickety | IT Helpdesk
                                 status=selected_status,
                                 priority=selected_priority,
                                 category=selected_category,
-                                sort=selected_sort
+                                sort=selected_sort,
+                                sla=selected_sla
                             ) }}"
                         >
                             Další
